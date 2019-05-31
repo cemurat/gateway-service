@@ -1,0 +1,32 @@
+language: java
+jdk: oraclejdk8
+sudo: required
+services: docker
+env:
+  global:
+  - COMMIT=${TRAVIS_COMMIT::7}
+  - secure: 2F/lp9XKlhsd+/yqFEyPLgRiwk5NSxC0t3X8CjsDa4//NhSYCo8pQ0WcXzhZJy+wFXMinW00YjwasdwBLMHxJ0aTyyTbjGKcetoNsGUVD13EMwQhwRWQjeyoeQL/kJAl5/hxqyjwXf/bDUrEiF4i2FFi/ErksOXjARyinZEIUoFX/se3atbshvg8QM20KrlHrM0l0DFBf3H+kzvl28YJH8+XBww3LlZ/oxYsMFLlhpUQVKyap8YW9q0lupBNn+WT0ZEpn81HawMiXG14FZSqiffLkjRkoWIJWqa3ozaWTuofWok1PrbHFVB0kD+6LszbEwpDjxq+P62FVGsGPCOfn/E1CKDwv4MFduQHD0H0dzjAM4Nq1Ry2XSXL8vGFWuJhZchjqjXFDGLBq5eS45rt6IaZQRYzPC10rt1MTtuMPkiNfz2knYR2d1CfMZBs0vFcMG0vFPc0lblk7rjtHBZNadjF5iho6LbDRlFhNWfKobrZzX/tsCAe4qnAjzVsEv/cTleLVAyAAYJGBh5usl1K9y0DXomTCS8G2KZvkajl3he1fgtw1mifHwV3oRVLubK/7S7u7QH9b/2HcGrNX4lfpOFMS6qkxXbg9IkdKauyJQQIKR98BGMp0xwEZDgtZoh9XzxLmsZZiyVzaaIJG1KQ9PRejD1WbxyE5sGedHCssrg=
+  - secure: 5x7iPj/tiRLj5kSKP+kiuWhuG2GTx/3Je3j2Ph3avvtWP79YXoCxbmqLTyWF3il20OOA1sGYEFt5LgRB1PwmOIa+rBBFnNj0Vss0ATghzun7hNi+9UjN29CGxHQLTynSHTRfPhV115WMiXLburc0cIM2+RUhGqUBQ+LnnnEgq4bNntF9+XygH2zeLTMlv6kLpTxzxaiX75IJVHbwfIIzDDcNv7cNZptyMGyS3na3dmMpKVdkbO3/Xe6z/djf4ev6bn59X9IFJ7cRLV6HKKVcpgEVmoaq8YA0DgZY9hWPraoZKIKvarG1l9KOn5HmhGGCmp1sGmIL9JfrusnY8SUuJ6SceY5b5NbiY/hx6bNV64EHAdQP2CG35QsfQEIFjKyUn1nauy7ndqZ0DMAcw1bAJSm1WKDwTup57XeoGSdZJGKbhPf1OSz1pLNueMV3MBq5BFj0azicjBSS944iNPXZdJN/XWeVTOq46Gw4Cu40+9YHIwgDnDGVEWZwxeZB0saHqS4TezLDcZoCUSo07RFf3TEkNZOWgU7Hawh7ig14xK7Ft2t6R2X+khscYRfUTOfxFVzCCH55eRPZXrb2hDHyFMpjWSpDFheVzWBeigHbzEgpOJJR8znBUKQCtnyyXjhD1x7OBAhuseCDtqvsjZtzIqHYLQDo1Uz1C2T+CTj8FMo=
+  - secure: cJGXvnUTk+eNc6aghCzi6zkWrWawPl1WnMgiEu25x67dZXytPQUkzUzf0DarXGxTdrjmaXSdn5e8TXICyHBI2dGbwMbTmN3arc/Q+mN/afhQhMtVtoQ6MLFdSdzpSBoNUs9SmPmdiCYE90gMtcCRPpD1Hwi64AtKDzdG1TkKVTzTebqtugGxHpiZQIYDkP1Ki6gIJlTROOq8wzDWLXmO947j9xki0gY+nO33EP0p/D3w7F3XpAJc9xyzHQ9DlrXO1U3suh0BMXJG+KPJcbxNSvpdUafurMt9yOgURUsFz69r4YYQ8fHOpx0GKeocHamcQOz/NFq4gXjMz+6ETxmy7u/C9Gzp2d3+eUDdarP2BIzMaO7Dn5tRpmzYvDq1FZNF1BZdR7bXPWr+2+vAZqSBKZwkSNMBFBgHpBLMI2HZmKLBBaUKVMQEsq7057dOE84p4wfBk0WGmIqVYI3VW1+W2EKE+SNFHmYQ2mYLeK8L1neIQUAyC8Zx/d8MDJGl4w9/SrGCs9okZC4AHS9khzSxyctNmljxK4xYBif34yBq/C3JBsYknXUbjite4exd7wa2QIIAdbaWFjnPU2ZZAgPwfqaDppuiV6ExTkWo07U3HrLQapCaTvIWd12Sbv9zue057sgYu3+cT0JYxRD9ZXhPmRW0+Zx+A3Wh10trr0qQCQ0=
+branches:
+  only:
+  - master
+before_install:
+- chmod +x mvnw
+script:
+- "./mvnw clean install -B"
+cache:
+  directories:
+  - "$HOME/.m2/repository"
+after_success:
+- docker login -u $DOCKER_USER -p $DOCKER_PASS
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH;
+  fi`
+- export IMAGE_NAME=murat/gateway-service
+- docker build -t $IMAGE_NAME:$COMMIT .
+- docker tag $IMAGE_NAME:$COMMIT $IMAGE_NAME:$TAG
+- docker push $IMAGE_NAME
+deploy:
+  provider: heroku
+  api_key: "$HEROKU_API_KEY"
+  app: gateway-service
