@@ -9,6 +9,6 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone : http://hostip:8761/eureka/
+      defaultZone : http://service-discovery-tutorial.herokuapp.com:8761/eureka/
   instance:
     prefer-ip-address: true
